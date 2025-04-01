@@ -1,0 +1,51 @@
+/**
+ * Enum cho các mã lỗi trong hệ thống
+ */
+export enum ErrorCode {
+  // Validation errors
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  INVALID_INPUT = 'INVALID_INPUT',
+  
+  // Authentication errors
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
+  INVALID_TOKEN = 'INVALID_TOKEN',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  
+  // Authorization errors
+  FORBIDDEN = 'FORBIDDEN',
+  INSUFFICIENT_PERMISSIONS = 'INSUFFICIENT_PERMISSIONS',
+  
+  // Resource errors
+  NOT_FOUND = 'NOT_FOUND',
+  ALREADY_EXISTS = 'ALREADY_EXISTS',
+  CONFLICT = 'CONFLICT',
+  
+  // Service errors
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
+  TIMEOUT = 'TIMEOUT',
+  COMMUNICATION_ERROR = 'COMMUNICATION_ERROR',
+  
+  // Database errors
+  DATABASE_ERROR = 'DATABASE_ERROR',
+  TRANSACTION_FAILED = 'TRANSACTION_FAILED',
+  
+  // Server errors
+  INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
+  
+  // Business logic errors
+  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION',
+  
+  // File errors
+  FILE_UPLOAD_ERROR = 'FILE_UPLOAD_ERROR',
+  FILE_NOT_FOUND = 'FILE_NOT_FOUND',
+  
+  // Rate limiting
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
+  
+  // Cache errors
+  CACHE_ERROR = 'CACHE_ERROR',
+  
+  // Unknown errors
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}

@@ -1,0 +1,8 @@
+{
+  "name": "@app/common",
+  "version": "0.1.0",
+  "description": "Common library for Hari Backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true
+}
