@@ -1,12 +1,27 @@
-import { Injectable, Inject, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
-import { KAFKA_CLIENT, KAFKA_CONFIG } from '../constants/kafka.constants';
-import { KafkaConfig, KafkaMessageOptions } from '../interfaces/kafka-config.interface';
-import { KafkaPayload, KafkaResponse } from '../interfaces/kafka-payload.interface';
-import { KafkaSerializer } from '../serialization/kafka-serializer';
-import { lastValueFrom, Observable, timeout, TimeoutError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { ServiceTimeoutException, ServiceUnavailableException } from '@app/common/exceptions';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from "@nestjs/common";
+import { ClientKafka } from "@nestjs/microservices";
+import { KAFKA_CLIENT, KAFKA_CONFIG } from "../constants/kafka.constants";
+import {
+  KafkaConfig,
+  KafkaMessageOptions,
+} from "../interfaces/kafka-config.interface";
+import {
+  KafkaPayload,
+  KafkaResponse,
+} from "../interfaces/kafka-payload.interface";
+import { KafkaSerializer } from "../serialization/kafka-serializer";
+import { lastValueFrom, Observable, timeout, TimeoutError } from "rxjs";
+import { catchError, map } from "rxjs/operators";
+import {
+  ServiceTimeoutException,
+  ServiceUnavailableException,
+} from "@app/common/exceptions";
 
 @Injectable()
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
@@ -17,23 +32,26 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(KAFKA_CONFIG) private readonly kafkaConfig: KafkaConfig,
-    @Inject(KAFKA_CLIENT) private readonly client: ClientKafka,
+    @Inject(KAFKA_CLIENT) private readonly client: ClientKafka
   ) {}
 
   /**
    * Kết nối đến Kafka khi module được khởi tạo
    */
   async onModuleInit() {
-    this.logger.log('Initializing Kafka connection...');
-    
+    this.logger.log("Initializing Kafka connection...");
+
     try {
       // Kết nối client
       await this.client.connect();
       this.isConnected = true;
-      this.logger.log('Kafka client connected successfully');
+      this.logger.log("Kafka client connected successfully");
     } catch (error) {
       this.isConnected = false;
-      this.logger.error(`Failed to connect to Kafka: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to connect to Kafka: ${error.message}`,
+        error.stack
+      );
     }
   }
 
@@ -41,14 +59,17 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
    * Ngắt kết nối khi module bị hủy
    */
   async onModuleDestroy() {
-    this.logger.log('Closing Kafka connection...');
-    
+    this.logger.log("Closing Kafka connection...");
+
     try {
       await this.client.close();
       this.isConnected = false;
-      this.logger.log('Kafka client disconnected successfully');
+      this.logger.log("Kafka client disconnected successfully");
     } catch (error) {
-      this.logger.error(`Error closing Kafka connection: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error closing Kafka connection: ${error.message}`,
+        error.stack
+      );
     }
   }
 
@@ -58,28 +79,35 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
   async emit<T>(
     topic: string,
     message: T,
-    options: KafkaMessageOptions = {},
+    options: KafkaMessageOptions = {}
   ): Promise<void> {
     if (!this.isConnected) {
-      throw new ServiceUnavailableException('Kafka');
+      throw new ServiceUnavailableException("Kafka");
     }
 
     try {
       // Serialize message
-      const serializedMessage = this.serializer.serialize(message, { type: 'event' });
-      
+      const serializedMessage = this.serializer.serialize(message, {
+        type: "event",
+      });
+
       // Gửi message
-      await this.client.emit(topic, {
-        key: options.key,
-        headers: options.headers,
-        value: serializedMessage,
-        partition: options.partition,
-        timestamp: options.timestamp,
-      }).toPromise();
-      
+      await this.client
+        .emit(topic, {
+          key: options.key,
+          headers: options.headers,
+          value: serializedMessage,
+          partition: options.partition,
+          timestamp: options.timestamp,
+        })
+        .toPromise();
+
       this.logger.debug(`Message emitted to topic ${topic}`);
     } catch (error) {
-      this.logger.error(`Error emitting message to topic ${topic}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error emitting message to topic ${topic}: ${error.message}`,
+        error.stack
+      );
       throw error;
     }
   }
@@ -91,18 +119,20 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
     pattern: string,
     data: TRequest,
     options: {
-      timeout?: number; 
+      timeout?: number;
       correlationId?: string;
       headers?: Record<string, any>;
-    } = {},
+    } = {}
   ): Promise<TResponse> {
     if (!this.isConnected) {
-      throw new ServiceUnavailableException('Kafka');
+      throw new ServiceUnavailableException("Kafka");
     }
-    
-    const correlationId = options.correlationId || `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+
+    const correlationId =
+      options.correlationId ||
+      `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
     const requestTimeout = options.timeout || this.defaultRequestTimeout;
-    
+
     try {
       // Tạo payload với metadata
       const payload: KafkaPayload<TRequest> = {
@@ -110,44 +140,49 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
           id: `req-${Date.now()}`,
           timestamp: Date.now(),
           correlationId,
-          source: process.env.SERVICE_NAME || 'unknown',
-          type: 'request',
+          source: process.env.SERVICE_NAME || "unknown",
+          type: "request",
         },
         data,
       };
-      
+
       // Gửi request và đợi response
-      const response$ = this.client.send<KafkaResponse<TResponse>>(pattern, payload).pipe(
-        timeout(requestTimeout),
-        map(response => {
-          // Kiểm tra nếu response là error
-          if (response.status === 'error' && response.error) {
-            throw new Error(response.error.message || 'Unknown error');
-          }
-          
-          return response.data;
-        }),
-        catchError(error => {
-          // Xử lý timeout
-          if (error instanceof TimeoutError) {
-            throw new ServiceTimeoutException('Kafka', requestTimeout);
-          }
-          
-          throw error;
-        }),
-      );
-      
+      const response$ = this.client
+        .send<KafkaResponse<TResponse>>(pattern, payload)
+        .pipe(
+          timeout(requestTimeout),
+          map((response) => {
+            // Kiểm tra nếu response là error
+            if (response.status === "error" && response.error) {
+              throw new Error(response.error.message || "Unknown error");
+            }
+
+            return response.data;
+          }),
+          catchError((error) => {
+            // Xử lý timeout
+            if (error instanceof TimeoutError) {
+              throw new ServiceTimeoutException("Kafka", requestTimeout);
+            }
+
+            throw error;
+          })
+        );
+
       // Chuyển Observable thành Promise
       return await lastValueFrom(response$);
     } catch (error) {
-      this.logger.error(`Error sending message to pattern ${pattern}: ${error.message}`, error.stack);
-      
+      this.logger.error(
+        `Error sending message to pattern ${pattern}: ${error.message}`,
+        error.stack
+      );
+
       // Phân loại lỗi
       if (error instanceof ServiceTimeoutException) {
         throw error;
       }
-      
-      throw new ServiceUnavailableException('Kafka', { originalError: error });
+
+      throw new ServiceUnavailableException("Kafka", { originalError: error });
     }
   }
 

@@ -32,7 +32,12 @@ export class AuthController {
    * Xử lý đăng nhập
    */
   @MessagePattern(KafkaPattern.AUTH_LOGIN)
-  async login(@Payload() loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(@Payload("data") loginDto: LoginDto): Promise<AuthResponseDto> {
+    console.log(
+      "🔍 ~ login ~ apps/auth-service/src/controllers/auth.controller.ts:35 ~ loginDto:",
+      loginDto
+    );
+
     this.logger.log(`Processing login request: ${loginDto.usernameOrEmail}`);
     return this.authService.login(loginDto);
   }

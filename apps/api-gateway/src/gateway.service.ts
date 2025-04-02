@@ -28,7 +28,39 @@ export class GatewayService {
     private readonly kafkaService: KafkaService,
     private readonly dbService: MongoDatabaseService,
     private readonly cacheService: CacheService
-  ) {}
+  ) {
+    this.subscribeToPatterns();
+  }
+
+  private subscribeToPatterns() {
+    // Auth patterns
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.AUTH_REGISTER);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.AUTH_LOGIN);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.AUTH_REFRESH_TOKEN);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.AUTH_LOGOUT);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.AUTH_VALIDATE_TOKEN);
+
+    // User patterns
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_CREATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_FIND_ALL);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_GET_BY_ID);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_UPDATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_DELETE);
+
+    // Product patterns
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.PRODUCT_SEARCH);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.PRODUCT_GET_BY_ID);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.PRODUCT_CREATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.PRODUCT_UPDATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.PRODUCT_DELETE);
+
+    // Category patterns
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.CATEGORY_FIND_ALL);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.CATEGORY_GET_BY_ID);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.CATEGORY_CREATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.CATEGORY_UPDATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.CATEGORY_DELETE);
+  }
 
   // --- Health Check ---
   async checkHealth() {
