@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:latest
@@ -69,22 +67,6 @@ services:
       - kafka
       - redis
 
-  product-service:
-    build:
-      context: .
-      dockerfile: apps/product-service/Dockerfile
-    ports:
-      - "3002:3002"
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017/hari
-      - KAFKA_BROKER=kafka:29092
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - mongodb
-      - kafka
-      - redis
-
   auth-service:
     build:
       context: .
@@ -96,27 +78,46 @@ services:
       - KAFKA_BROKER=kafka:29092
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - JWT_SECRET=your-secret-key
+      - JWT_EXPIRES_IN=15m
+      - JWT_REFRESH_EXPIRES_IN=7d
     depends_on:
       - mongodb
       - kafka
       - redis
 
-  ai-service:
-    build:
-      context: .
-      dockerfile: apps/ai-service/Dockerfile
-    ports:
-      - "3004:3004"
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017/hari
-      - KAFKA_BROKER=kafka:29092
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - mongodb
-      - kafka
-      - redis
+  # product-service:
+  #   build:
+  #     context: .
+  #     dockerfile: apps/product-service/Dockerfile
+  #   ports:
+  #     - "3002:3002"
+  #   environment:
+  #     - MONGODB_URI=mongodb://mongodb:27017/hari
+  #     - KAFKA_BROKER=kafka:29092
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #   depends_on:
+  #     - mongodb
+  #     - kafka
+  #     - redis
+
+  # ai-service:
+  #   build:
+  #     context: .
+  #     dockerfile: apps/ai-service/Dockerfile
+  #   ports:
+  #     - "3004:3004"
+  #   environment:
+  #     - MONGODB_URI=mongodb://mongodb:27017/hari
+  #     - KAFKA_BROKER=kafka:29092
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #   depends_on:
+  #     - mongodb
+  #     - kafka
+  #     - redis
 
 volumes:
   mongodb_data:
-  redis_data: 
+  redis_data:

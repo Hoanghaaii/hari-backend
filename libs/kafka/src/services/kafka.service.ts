@@ -27,7 +27,7 @@ import {
 export class KafkaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(KafkaService.name);
   private readonly serializer = new KafkaSerializer();
-  private readonly defaultRequestTimeout = 30000; // 30 seconds
+  private readonly defaultRequestTimeout = 10000; // 30 seconds
   private isConnected = false;
 
   constructor(
