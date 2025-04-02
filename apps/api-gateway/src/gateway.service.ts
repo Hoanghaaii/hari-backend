@@ -17,6 +17,7 @@ import {
   FilterUserDto,
 } from "@app/common/dto/user";
 import { SearchDto, PaginationDto } from "@app/common/dto";
+import { Connection } from "mongoose";
 
 @Injectable()
 export class GatewayService {
@@ -50,18 +51,39 @@ export class GatewayService {
 
   private async checkDatabaseHealth() {
     try {
-      const connection = this.dbService.getConnection();
-      const isConnected = connection.readyState === 1;
+      const connection: Connection = this.dbService.getConnection(); // Lấy connection từ dbService
+      const isConnected = connection.readyState === 1; // Kiểm tra trạng thái kết nối
+
+      // Lấy thông tin chi tiết từ connection
+      const connectionDetails = {
+        host: connection.host, // Tên host (ví dụ: "localhost")
+        port: connection.port, // Cổng (ví dụ: 27017)
+        databaseName: connection.name, // Tên database (ví dụ: "hari")
+        // Không có connectionString đầy đủ, nhưng có thể tự xây dựng
+        reconstructedConnectionString: `mongodb://${connection.host}:${connection.port}/${connection.name}`,
+      };
+
+      this.logger.log(
+        `Database connection details: ${JSON.stringify(connectionDetails)}`
+      );
 
       return {
         status: isConnected ? "up" : "down",
         message: isConnected ? "Connected" : "Disconnected",
+        connectionDetails: {
+          host: connection.host,
+          port: connection.port,
+          databaseName: connection.name,
+          reconstructedConnectionString:
+            connectionDetails.reconstructedConnectionString,
+        },
       };
     } catch (error) {
       this.logger.error(`Database health check failed: ${error.message}`);
       return {
         status: "down",
         message: error.message,
+        connectionDetails: null, // Trả về null nếu có lỗi
       };
     }
   }

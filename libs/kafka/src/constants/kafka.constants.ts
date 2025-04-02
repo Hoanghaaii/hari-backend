@@ -39,6 +39,7 @@ export enum KafkaPattern {
   USER_FIND_ALL = "user.find.all",
   USER_UPDATE = "user.update",
   USER_DELETE = "user.delete",
+  USER_EXISTS = "user.exists",
 
   // Auth patterns
   AUTH_VALIDATE_TOKEN = "auth.validate.token",

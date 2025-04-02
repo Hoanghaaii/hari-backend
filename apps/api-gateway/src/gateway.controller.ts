@@ -53,6 +53,11 @@ export class GatewayController {
   @Post("auth/login")
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
+    console.log(
+      "🔍 ~ login ~ apps/api-gateway/src/gateway.controller.ts:55 ~ loginDto:",
+      loginDto
+    );
+
     return this.gatewayService.login(loginDto);
   }
 
