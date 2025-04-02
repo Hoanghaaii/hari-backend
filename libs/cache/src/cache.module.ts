@@ -2,7 +2,6 @@ import { Module, DynamicModule, Global } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from 'cache-manager-ioredis';
-import { RedisService } from '@app/database/redis';
 import { CacheService } from './services/cache.service';
 import { CacheInterceptor } from './interceptors/cache.interceptor';
 
@@ -39,14 +38,14 @@ export class CacheModule {
                 db: configService.get<number>('REDIS_DB', 0),
                 ttl,
                 max,
-              };
+              } as any;
             }
             
             // Sử dụng in-memory cache
             return {
               ttl,
               max,
-            };
+            } as any;
           },
           inject: [ConfigService],
         }),
@@ -90,13 +89,13 @@ export class CacheModule {
                 db: configService.get<number>('REDIS_DB', 0),
                 ttl,
                 max,
-              };
+              } as any;
             }
             
             return {
               ttl,
               max,
-            };
+            } as any;
           },
           inject: [...(options.inject || []), ConfigService],
         }),

@@ -1,15 +1,15 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Cache } from "cache-manager";
 
 @Injectable()
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);
-  private readonly prefix: string = 'cache:';
+  private readonly prefix: string = "cache:";
 
   constructor(
     @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache,
+    private readonly cacheManager: Cache
   ) {}
 
   /**
@@ -58,7 +58,7 @@ export class CacheService {
    */
   async deleteMany(keys: string[]): Promise<void> {
     try {
-      await Promise.all(keys.map(key => this.delete(key)));
+      await Promise.all(keys.map((key) => this.delete(key)));
     } catch (error) {
       this.logger.error(`Error deleting multiple cache keys: ${error.message}`);
     }
@@ -69,7 +69,22 @@ export class CacheService {
    */
   async reset(): Promise<void> {
     try {
-      await this.cacheManager.reset();
+      // Trong cache-manager phiên bản mới, không có phương thức reset()
+      // Chúng ta phải thực hiện cách khác, như xóa từng key
+      // hoặc thông qua Redis client nếu đang sử dụng Redis
+      this.logger.warn(
+        "Cache reset is not directly supported in this cache-manager version"
+      );
+
+      // Nếu đang sử dụng redis và có thể truy cập trực tiếp client
+      if (this.cacheManager["store"] && this.cacheManager["store"].client) {
+        await this.cacheManager["store"].client.flushall();
+        this.logger.log("Reset cache using Redis client flushall");
+      } else {
+        this.logger.warn(
+          "Cannot reset cache: no direct access to underlying store"
+        );
+      }
     } catch (error) {
       this.logger.error(`Error resetting cache: ${error.message}`);
     }
@@ -78,13 +93,17 @@ export class CacheService {
   /**
    * Lấy giá trị từ cache, nếu không có thì gọi factory và lưu kết quả
    */
-  async getOrSet<T>(key: string, factory: () => Promise<T>, ttl?: number): Promise<T> {
+  async getOrSet<T>(
+    key: string,
+    factory: () => Promise<T>,
+    ttl?: number
+  ): Promise<T> {
     const cachedValue = await this.get<T>(key);
-    
+
     if (cachedValue !== undefined) {
       return cachedValue;
     }
-    
+
     const value = await factory();
     await this.set(key, value, ttl);
     return value;
@@ -98,9 +117,25 @@ export class CacheService {
       // Cách thực hiện sẽ phụ thuộc vào store được sử dụng
       // Đối với memory store, chúng ta không thể xóa theo pattern
       // Đối với Redis, có thể cần truy cập trực tiếp client
-      this.logger.warn(`deleteByPattern is not fully implemented for all cache stores`);
+      this.logger.warn(
+        `deleteByPattern is not fully implemented for all cache stores`
+      );
+
+      // Nếu đang sử dụng Redis và có thể truy cập client
+      if (this.cacheManager["store"] && this.cacheManager["store"].client) {
+        const client = this.cacheManager["store"].client;
+        const keys = await client.keys(`${this.prefix}${pattern}`);
+        if (keys.length > 0) {
+          await client.del(keys);
+          this.logger.log(
+            `Deleted ${keys.length} keys matching pattern ${pattern}`
+          );
+        }
+      }
     } catch (error) {
-      this.logger.error(`Error deleting cache by pattern ${pattern}: ${error.message}`);
+      this.logger.error(
+        `Error deleting cache by pattern ${pattern}: ${error.message}`
+      );
     }
   }
 }

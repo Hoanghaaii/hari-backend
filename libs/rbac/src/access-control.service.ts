@@ -1,7 +1,7 @@
-import { Injectable, Inject, OnModuleInit, Logger } from '@nestjs/common';
-import { AccessControl } from 'accesscontrol';
-import { UserRole } from '@app/common/enums';
-import { RbacModuleOptions } from './rbac.module';
+import { Injectable, Inject, OnModuleInit, Logger } from "@nestjs/common";
+import { AccessControl } from "accesscontrol";
+import { UserRole } from "@app/common/enums";
+import { RbacModuleOptions } from "./rbac.module";
 
 @Injectable()
 export class AccessControlService implements OnModuleInit {
@@ -9,8 +9,8 @@ export class AccessControlService implements OnModuleInit {
   private ac: AccessControl;
 
   constructor(
-    @Inject('RBAC_OPTIONS')
-    private readonly options: RbacModuleOptions,
+    @Inject("RBAC_OPTIONS")
+    private readonly options: RbacModuleOptions
   ) {
     this.ac = new AccessControl();
   }
@@ -19,13 +19,13 @@ export class AccessControlService implements OnModuleInit {
     // Nếu có grants object từ options, sử dụng nó
     if (this.options.grantsObject) {
       this.ac.setGrants(this.options.grantsObject);
-      this.logger.log('Access Control initialized with provided grants');
+      this.logger.log("Access Control initialized with provided grants");
       return;
     }
 
     // Nếu không, tạo grants mặc định
     this.initializeDefaultGrants();
-    this.logger.log('Access Control initialized with default grants');
+    this.logger.log("Access Control initialized with default grants");
   }
 
   /**
@@ -33,68 +33,114 @@ export class AccessControlService implements OnModuleInit {
    */
   private initializeDefaultGrants() {
     // Super Admin - có tất cả quyền
-    this.ac.grant(UserRole.SUPER_ADMIN)
-      .createAny('*')
-      .readAny('*')
-      .updateAny('*')
-      .deleteAny('*');
-    
+    // Thay vì sử dụng ký tự "*", hãy đặt quyền cho từng resource cụ thể
+    this.ac
+      .grant(UserRole.SUPER_ADMIN)
+      // User resource
+      .createAny("user")
+      .readAny("user")
+      .updateAny("user")
+      .deleteAny("user")
+      // Product resource
+      .createAny("product")
+      .readAny("product")
+      .updateAny("product")
+      .deleteAny("product")
+      // Category resource
+      .createAny("category")
+      .readAny("category")
+      .updateAny("category")
+      .deleteAny("category")
+      // Thêm các resource khác nếu cần
+      .createAny("order")
+      .readAny("order")
+      .updateAny("order")
+      .deleteAny("order")
+      .createAny("payment")
+      .readAny("payment")
+      .updateAny("payment")
+      .deleteAny("payment")
+      .createAny("notification")
+      .readAny("notification")
+      .updateAny("notification")
+      .deleteAny("notification")
+      .createAny("setting")
+      .readAny("setting")
+      .updateAny("setting")
+      .deleteAny("setting")
+      .createAny("log")
+      .readAny("log")
+      .updateAny("log")
+      .deleteAny("log");
+
     // Admin - có quyền quản lý hầu hết mọi thứ
-    this.ac.grant(UserRole.ADMIN)
-      .createAny('user')
-      .readAny('user')
-      .updateAny('user')
-      .deleteAny('user')
-      .createAny('product')
-      .readAny('product')
-      .updateAny('product')
-      .deleteAny('product')
-      .createAny('category')
-      .readAny('category')
-      .updateAny('category')
-      .deleteAny('category');
-    
+    this.ac
+      .grant(UserRole.ADMIN)
+      .createAny("user")
+      .readAny("user")
+      .updateAny("user")
+      .deleteAny("user")
+      .createAny("product")
+      .readAny("product")
+      .updateAny("product")
+      .deleteAny("product")
+      .createAny("category")
+      .readAny("category")
+      .updateAny("category")
+      .deleteAny("category");
+
     // Seller - quản lý sản phẩm của mình
-    this.ac.grant(UserRole.SELLER)
-      .readOwn('user')
-      .updateOwn('user')
-      .createOwn('product')
-      .readAny('product')
-      .updateOwn('product')
-      .deleteOwn('product')
-      .readAny('category');
-    
+    this.ac
+      .grant(UserRole.SELLER)
+      .readOwn("user")
+      .updateOwn("user")
+      .createOwn("product")
+      .readAny("product")
+      .updateOwn("product")
+      .deleteOwn("product")
+      .readAny("category");
+
     // User - người dùng bình thường
-    this.ac.grant(UserRole.USER)
-      .readOwn('user')
-      .updateOwn('user')
-      .readAny('product')
-      .readAny('category');
+    this.ac
+      .grant(UserRole.USER)
+      .readOwn("user")
+      .updateOwn("user")
+      .readAny("product")
+      .readAny("category");
   }
 
   /**
    * Kiểm tra quyền truy cập
    */
-  can(roles: string[], action: string, resource: string, isOwn = false): boolean {
-    const possession = isOwn ? 'own' : 'any';
-    
+  can(
+    roles: string[],
+    action: string,
+    resource: string,
+    isOwn = false
+  ): boolean {
+    const possession = isOwn ? "own" : "any";
+
     // Nếu có super role, luôn cho phép
     if (this.options.superRole && roles.includes(this.options.superRole)) {
       return true;
     }
-    
+
     // Kiểm tra từng role
     for (const role of roles) {
       try {
-        const permission = this.ac.can(role)[`${action}${capitalize(possession)}`](resource);
+        const permission = this.ac
+          .can(role)
+          [`${action}${capitalize(possession)}`](resource);
         if (permission.granted) {
           return true;
         }
       } catch (error) {
-        this.logger.warn(`Error checking permission for role ${role}: ${error.message}`);
+        this.logger.warn(
+          `Error checking permission for role ${role}: ${error.message}`
+        );
       }
     }
-    
+
     return false;
   }
 
@@ -120,7 +166,7 @@ export class AccessControlService implements OnModuleInit {
   }
 
   /**
-   * Thu hồi quyền cho role (chỉ sử dụng với revokeAll, không hỗ trợ revoke)
+   * Thu hồi quyền cho role
    */
   revoke(role: string): void {
     // AccessControl không có phương thức revoke trực tiếp

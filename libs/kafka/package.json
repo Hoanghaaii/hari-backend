@@ -1,0 +1,8 @@
+{
+  "name": "@app/kafka",
+  "version": "0.1.0",
+  "description": "Kafka library for Hari Backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true
+}
