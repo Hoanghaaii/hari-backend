@@ -43,15 +43,13 @@ export class UserController {
    * Lấy người dùng theo email hoặc username
    */
   @MessagePattern(KafkaPattern.USER_GET_BY_EMAIL)
-  async getUserByEmail(
-    @Payload() payload: { usernameOrEmail: string; includePassword?: boolean }
-  ): Promise<UserDocument | null> {
+  async getUserByEmail(@Payload() payload: any): Promise<UserDocument | null> {
     this.logger.log(
-      `Processing get user by email/username request: ${payload.usernameOrEmail}`
+      `Processing get user by email/username request: ${payload.data.usernameOrEmail}`
     );
     return this.userService.findUserByUsernameOrEmail(
-      payload.usernameOrEmail,
-      payload.includePassword || false
+      payload.data.usernameOrEmail,
+      payload.data.includePassword || false
     );
   }
 
