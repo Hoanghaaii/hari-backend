@@ -126,7 +126,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       retryDelay?: number; // Thêm option độ trễ giữa các lần retry (ms)
     } = {}
   ): Promise<TResponse> {
-    const maxRetries = options.retries ?? 3; // Mặc định retry 3 lần
+    const maxRetries = options.retries ?? 1; // Mặc định retry 3 lần
     const retryDelay = options.retryDelay ?? 1000; // 1 giây mặc định
     let lastError: any;
 

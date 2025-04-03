@@ -59,7 +59,7 @@ export class AuthService {
 
       // Hash password
       const hashedPassword = await this.hashPassword(registerDto.password);
-
+      console.log("hello");
       // Gọi sang UserService để tạo user thông qua Kafka
       const userResponse: any = await this.kafkaService.send(
         KafkaPattern.USER_CREATE,

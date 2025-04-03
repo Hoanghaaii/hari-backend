@@ -21,11 +21,10 @@ export class AuthController {
    * Xử lý đăng ký
    */
   @MessagePattern(KafkaPattern.AUTH_REGISTER)
-  async register(
-    @Payload() registerDto: RegisterDto
-  ): Promise<AuthResponseDto> {
-    this.logger.log(`Processing registration request: ${registerDto.email}`);
-    return this.authService.register(registerDto);
+  async register(@Payload() registerDto: any): Promise<AuthResponseDto> {
+    const register = registerDto.data;
+    this.logger.log(`Processing registration request: ${register.email}`);
+    return this.authService.register(register);
   }
 
   /**

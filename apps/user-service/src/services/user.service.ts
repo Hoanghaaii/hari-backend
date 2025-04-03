@@ -31,7 +31,10 @@ export class UserService {
    * Tạo người dùng mới
    */
   async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
-    this.logger.log(`Creating user with email: ${createUserDto.email}`);
+    console.log(
+      "🔍 ~ createUser ~ apps/user-service/src/services/user.service.ts:33 ~ createUserDto:",
+      createUserDto
+    );
 
     try {
       // Kiểm tra xem email hoặc username đã tồn tại chưa
