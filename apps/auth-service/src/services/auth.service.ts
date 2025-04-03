@@ -32,7 +32,13 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly kafkaService: KafkaService,
     private readonly cacheService: CacheService
-  ) {}
+  ) {
+    // Đảm bảo đăng ký các pattern reply trước khi sử dụng
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_GET_BY_EMAIL);
+    // Đăng ký các pattern khác mà AuthService sẽ sử dụng
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_CREATE);
+    this.kafkaService.subscribeToResponseOf(KafkaPattern.USER_EXISTS);
+  }
 
   /**
    * Đăng ký người dùng mới
